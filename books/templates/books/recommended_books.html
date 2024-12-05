@@ -1,0 +1,71 @@
+{% extends 'base_generic.html' %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Livres recommandés pour vous</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        h2 {
+            text-align: center;
+            margin-top: 20px;
+            color: #b56eb1;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 20px auto;
+            max-width: 800px;
+        }
+        li {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        p {
+            margin: 5px 0;
+        }
+        p strong {
+            color: #b56eb1;
+        }
+        .empty-message {
+            text-align: center;
+            font-size: 1.2em;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <h2>Livres recommandés pour vous</h2>
+    <ul>
+        {% for item in recommended_books %}
+        <li>
+            <h3>{{ item.book.titre }}</h3>
+            <p><strong>Recommandé par :</strong> {{ item.recommender }}</p>
+            <p><strong>Recommandé le :</strong>{{ item.date }}</p>
+            <p><strong>Auteur :</strong> {{ item.book.auteur }}</p>
+            <p><strong>Genre :</strong> {{ item.book.genre }}</p>
+            <p><strong>Synopsis :</strong> {{ item.book.synopsis }}</p>
+        </li>
+        {% empty %}
+        <p class="empty-message">Aucune recommandation pour le moment.</p>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,19 @@
+# Environnements virtuels et configurations locales
+venv/
+.env
+settings.py
+
+# Fichiers compilés Python
+*.py[cod]
+__pycache__/
+
+# Logs et autres fichiers temporaires
+*.log
+*.tmp
+
+# Dossiers générés
+/build/
+/dist/
+
+# variables d'environnement
+myproject/.env

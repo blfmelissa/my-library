@@ -1,0 +1,278 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalogue des livres</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        header {
+            background-color: #b56eb1;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+        }
+        nav {
+            margin-top: 10px;
+        }
+        nav a {
+            color: white;
+            background: none;
+            border: none;
+            padding: 0;
+            text-decoration: none;
+            margin: 0 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        nav a:hover {
+            color: rgb(89, 39, 85);
+        }
+        main {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        ul {
+            padding: 0;
+        }
+        li {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            list-style: none;
+            background: #fdfdfd;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        li img {
+            max-width: 150px;
+            border-radius: 5px;
+        }
+        li h2 {
+            color: #84257f;
+            margin: 0 0 10px;
+        }
+        button {
+            background: #d9534f;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        button:hover {
+            background: #c9302c;
+        }
+        .noter {
+            padding: 7px 10px;
+            background: #9b6cb7;
+        }
+        .noter:hover {
+            background: #bf7add;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background: #333;
+            color: white;
+        }
+        .stars {
+            display: flex;
+            gap:2px;
+        }
+
+        .star {
+            margin-right: 5px; 
+            transition: color 0.3s ease; 
+            font-size: 27px; 
+            cursor: pointer;
+            color: #ddd; 
+        }
+
+        .star:hover,
+        .star.active {
+            color: gold; 
+        }
+        #bjr_nom {
+            font-size:20px;
+            color : #a93aa3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Catalogue des livres</h1>
+        <p id="bjr_nom">Bienvenue {{ user.username }} ! :)</p>
+        <nav>
+            <a href="{% url 'add_book' %}">Ajouter un livre</a>
+            <a href="{% url 'recommended_books' %}">Livres recommandés</a>
+            <a href="{% url 'logout' %}">Se déconnecter</a>
+        </nav>
+    </header>
+
+    <main>
+        {% if page_obj %}
+            <ul>
+                {% for book in page_obj %}
+                    <li>
+                        <h2>{{ book.titre }}</h2>
+                        {% if book.cover_image_url %}
+                            <img src="{{ book.cover_image_url }}" alt="{{ book.title }}">
+                        {% else %}
+                            <p>Aucune couverture disponible.</p>
+                        {% endif %}
+                        <p><strong>Auteur :</strong> {{ book.auteur }}</p>
+                        <p><strong>Genre :</strong> {{ book.genre }}</p>
+                        <p><strong>Synopsis :</strong> {{ book.synopsis }}</p>
+                        <p><strong>Publié par :</strong> {{ book.added_by.username }}</p>
+                        <a href="{% url 'recommend' book.id %}">Recommander ce livre</a>
+                        <br><br>
+                        {% if book.added_by == user %}
+                            <form action="{% url 'delete_book' book.id %}" method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce livre ?');">
+                                    Supprimer
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        <!-- Formulaire de notation -->
+                        <form method="post" id="form-{{ book.id }}">
+                            <!-- Affichage de la moyenne des notes -->
+                            <p id="book-{{ book.id }}-rating">
+                                {% if book.average_rating %}
+                                    Noté {{ book.average_rating|floatformat:1 }} /5
+                                {% else %}
+                                    Aucune note pour le moment
+                                {% endif %}
+                            </p>
+                            {% csrf_token %}
+                            <input type="hidden" name="book_id" value="{{ book.id }}">
+                            <input type="hidden" id="rating-{{ book.id }}" name="score" value="0"> <!-- Valeur cachée -->
+                            <div class="stars" id="stars-{{ book.id }}">
+                                {% for i in numbers %}
+                                    <span class="star {% if book.average_rating >= i %}active{% endif %}" data-value="{{ i }}">★</span>
+                                {% endfor %}
+                            </div>
+                            <button type="submit" class="noter" id="noter-{{ bookd.id }}">Noter</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+            <!-- Liens de pagination -->
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1">&laquo; Première</a>
+                        <a href="?page={{ page_obj.previous_page_number }}">Précédente</a>
+                    {% endif %}
+    
+                    <span class="current">
+                        Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}.
+                    </span>
+    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}">Suivante</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}">Dernière &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+        {% else %}
+            <p>Aucun livre disponible dans le catalogue.</p>
+        {% endif %}
+    </main>
+
+    <footer>
+        <p>&copy; 2024 - Mon site de livres</p>
+    </footer>
+
+    <!-- JavaScript pour la gestion des étoiles -->
+    <script>
+    document.querySelectorAll('.stars').forEach(starContainer => {
+        const bookId = starContainer.id.split('-')[1];
+        const form = document.querySelector(`#form-${bookId}`);
+        let selectedRating = 0;
+
+        starContainer.querySelectorAll('.star').forEach(star => {
+            star.addEventListener('mouseover', function () {
+                const rating = parseInt(this.dataset.value, 10);
+                starContainer.querySelectorAll('.star').forEach((s, index) => {
+                    s.classList.toggle('active', index < rating);
+                });
+            });
+
+            star.addEventListener('click', function () {
+                selectedRating = parseInt(this.dataset.value, 10);
+                starContainer.querySelectorAll('.star').forEach((s, index) => {
+                    s.classList.toggle('active', index < selectedRating);
+                });
+
+                const hiddenInput = document.querySelector(`#rating-${bookId}`);
+                if (hiddenInput) {
+                    hiddenInput.value = selectedRating;
+                }
+            });
+
+            starContainer.addEventListener('mouseleave', function () {
+                starContainer.querySelectorAll('.star').forEach((s, index) => {
+                    s.classList.toggle('active', index < selectedRating);
+                });
+            });
+        });
+
+        form.addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const hiddenInput = form.querySelector('input[name="score"]');
+    if (!hiddenInput || !hiddenInput.value || parseInt(hiddenInput.value, 10) === 0) {
+        alert('Veuillez sélectionner une note avant de soumettre.');
+        return;
+    }
+
+    const formData = new FormData(form);
+    console.log("Envoi des données :", Object.fromEntries(formData)); // Debug : Affiche les données envoyées
+
+    fetch('/catalogue/', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => {
+        console.log("Réponse reçue :", response); // Debug : Vérifie la réponse brute
+        return response.json();
+    })
+    .then(data => {
+        console.log("Données reçues :", data); // Debug : Vérifie les données JSON
+
+        if (data.average_rating !== undefined) {
+            const ratingDisplay = document.querySelector(`#book-${bookId}-rating`);
+            if (ratingDisplay) {
+                ratingDisplay.innerText = `Noté ${data.average_rating.toFixed(1)} /5`;
+            }
+        } else if (data.error) {
+            alert(data.error);
+        }
+    })
+    .catch(error => console.error('Erreur:', error));
+});
+    });
+
+    </script>
+</body>
+</html>
