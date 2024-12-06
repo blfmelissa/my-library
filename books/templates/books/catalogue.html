@@ -112,7 +112,13 @@
         }
         #bjr_nom {
             font-size:20px;
-            color : #a93aa3;
+            font-weight: bold;
+            color : #ae71ab;
+        }
+        #bien_ajout {
+            font-weight: bold;
+            color: #6467c2;
+            text-align: center;
         }
     </style>
 </head>
@@ -128,6 +134,13 @@
     </header>
 
     <main>
+        {% if messages %}
+            <div class="alert alert-success">
+                {% for message in messages %}
+                    <p id="bien_ajout">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
         {% if page_obj %}
             <ul>
                 {% for book in page_obj %}
