@@ -103,6 +103,7 @@ def add_book(request):
             book = form.save(commit=False)
             book.added_by = request.user  
             book.save()  
+            messages.success(request, f"Le livre \"{book.titre}\" a bien été ajouté au catalogue !")
             return redirect('catalogue')  
     else:
         form = BookForm()
