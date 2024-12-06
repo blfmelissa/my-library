@@ -33,9 +33,11 @@ def register(request):
             user = form.save()
             login(request, user)
             return redirect('catalogue') 
-        else:
+        elif 'username' in form.errors:
             messages.error(request, "Le nom d'utilisateur est déjà utilisé.")
-            return render(request, 'registration/register.html', {'form': form})
+        else :
+            messages.error(request, "Les mots de passe ne correspondent pas.")
+        return render(request, 'registration/register.html', {'form': form})
     else:
         form = UserForm()
     return render(request, 'registration/register.html', {'form': form})
@@ -141,7 +143,6 @@ def recommend(request, book_id):
 
 @login_required
 def recommended_books(request):
-    # Récupérer les recommandations de l'utilisateur connecté
     recommandations = Recommandation.objects.filter(recommendee=request.user).select_related('id_livre', 'id_user')
     
     # Créer une liste avec les livres et l'utilisateur qui a recommandé chaque livre
