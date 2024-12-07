@@ -151,7 +151,8 @@ def recommended_books(request):
     for recommandation in recommandations:
         recommended_books.append({
             'book': recommandation.id_livre,  
-            'recommender': recommandation.id_user.username  
+            'recommender': recommandation.id_user.username,
+            'date': recommandation.date_recommendation
         })
         
     return render(request, 'books/recommended_books.html', {'recommended_books': recommended_books})
